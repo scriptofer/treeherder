@@ -171,10 +171,26 @@
 
         <!-- Start span for job groups -->
         <script type="'text/ng-template'" id="jobGroupBeginClone.html">
-            <span class="platform-group">
-                <span class="disabled job-group" title="{{ name }}">{{ symbol }}(</span>
+            <span class="platform-group btn group-btn btn-xs">
+                <span class="job-group {{ grkey }}" title="{{ name }}"
+                      data-grkey="{{ grkey }}">{{ symbol }}(</span>
                 <span class="job-group-list"></span>)
             </span>
+        </script>
+
+        <!-- Job group count list span -->
+        <script type="'text/ng-template'" id="jobGroupCountListClone.html">
+            <span class="group-count-list" title="Counts of jobs by result">
+                <span class="fa fa-plus-square-o group-count-list-icon"></span>
+            </span>
+        </script>
+
+        <!-- Job group count span -->
+        <script type="'text/ng-template'" id="jobGroupCountClone.html">
+            <button class="btn group-btn btn-xs job-group-count {{ btnClass }} {{ key }}"
+                  data-grkey="{{ grkey }}"
+                  ignore-job-clear-on-click
+                  title="{{ title }}">{{ value }}</button>
         </script>
 
         <!-- Job Btn span -->

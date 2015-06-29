@@ -371,6 +371,12 @@ treeherderApp.controller('MainCtrl', [
             $location.search({"repo": repo_name});
         };
 
+        $scope.toggleGroupState = function() {
+            var oldGroupState = $location.search().group_state || "collapsed";
+            var newGroupState = oldGroupState === "collapsed" ? "expanded" : "collapsed";
+            $location.search("group_state", newGroupState);
+        };
+
         $scope.clearFilterBox = function() {
             thJobFilters.removeFilter("searchStr");
             $("#platform-job-text-search-field").val("");

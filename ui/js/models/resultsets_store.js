@@ -217,6 +217,7 @@ treeherder.factory('ThResultSetStore', [
                     // maps to help finding objects to update/add
                     rsMap:{},
                     jobMap:{},
+                    grpMap:{},
                     unclassifiedFailureMap: {},
                     //used as the offset in paging
                     rsMapOldestTimestamp:null,
@@ -258,6 +259,11 @@ treeherder.factory('ThResultSetStore', [
         var getJobMapKey = function(job) {
             //Build string key for jobMap entires
             return 'key' + job.id;
+        };
+
+        var getGroupMapKey = function(grName, plName, plOpt) {
+            //Build hash key for groupMap entires
+            return thAggregateIds.escape(grName + plName + plOpt);
         };
 
         var getSelectedJob = function(repoName){
@@ -330,6 +336,7 @@ treeherder.factory('ThResultSetStore', [
                 // groups
                 for (var gp_i = 0; gp_i < pl_obj.groups.length; gp_i++) {
                     var gr_obj = pl_obj.groups[gp_i];
+                    gr_obj.mapKey = getGroupMapKey(gr_obj.name, pl_obj.name, pl_obj.option);
 
                     var grMapElement = {
                         grp_obj: gr_obj,
@@ -337,6 +344,7 @@ treeherder.factory('ThResultSetStore', [
                         jobs: {}
                     };
                     plMapElement.groups[gr_obj.name] = grMapElement;
+                    repositories[repoName].grpMap[gr_obj.mapKey] = grMapElement;
 
                     // jobs
                     for (var j_i = 0; j_i < gr_obj.jobs.length; j_i++) {
@@ -442,6 +450,7 @@ treeherder.factory('ThResultSetStore', [
                     var grp_obj = {
                         symbol: groupInfo.symbol,
                         name: groupInfo.name,
+                        mapKey: groupInfo.mapKey,
                         jobs: []
                     };
 
@@ -785,6 +794,10 @@ treeherder.factory('ThResultSetStore', [
             // this is a "watchable" for jobs
             return repositories[repoName].jobMap;
         };
+        var getGroupMap = function(repoName){
+            // this is a "watchable" for jobs
+            return repositories[repoName].grpMap;
+        };
         var getLoadingStatus = function(repoName){
             return repositories[repoName].loadingStatus;
         };
@@ -896,6 +909,8 @@ treeherder.factory('ThResultSetStore', [
 
             var name = job.job_group_name;
             var symbol = job.job_group_symbol;
+            var mapKey = getGroupMapKey(name, job.platform, job.platform_option);
+
             if (job.tier && job.tier !== 1) {
                 if (symbol === "?") {
                     symbol = "";
@@ -905,7 +920,7 @@ treeherder.factory('ThResultSetStore', [
                 symbol = tierLabel;
             }
 
-            return {name: name, symbol: symbol};
+            return {name: name, symbol: symbol, mapKey: mapKey};
         };
 
         /*
@@ -1034,6 +1049,7 @@ treeherder.factory('ThResultSetStore', [
             fetchResultSets: fetchResultSets,
             getAllShownJobs: getAllShownJobs,
             getJobMap: getJobMap,
+            getGroupMap: getGroupMap,
             getLoadingStatus: getLoadingStatus,
             getPlatformKey: getPlatformKey,
             getResultSet: getResultSet,
