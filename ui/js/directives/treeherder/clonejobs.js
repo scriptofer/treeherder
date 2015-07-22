@@ -195,9 +195,11 @@ treeherder.directive('thCloneJobs', [
                 gi.jobGrpList.empty();
                 if (gi.jobGrpList.attr("data-group-state") === "expanded") {
                     gi.jobGrpList.attr("data-group-state", "collapsed");
+//                    gi.jgObj.groupState = "collapsed";
                     addGroupJobBtnEls(gi.jgObj, gi.jobGrpList);
                 } else {
                     gi.jobGrpList.attr("data-group-state", "expanded");
+//                    gi.jgObj.groupState = "expanded";
                     addJobBtnEls(gi.jgObj, gi.jobGrpList);
                 }
             }
@@ -214,6 +216,11 @@ treeherder.directive('thCloneJobs', [
             var lastJobSelected = ThResultSetStore.getSelectedJob($rootScope.repoName);
             var job, jobBtn, l;
             var jobBtnArray = [];
+
+//            .removeClass("collapsed");
+            var icon = jobTdEl.siblings(".group-count-list-icon");
+            icon.addClass("fa-minus-square-o");
+            icon.removeClass("fa-plus-square-o");
 
             for(l=0; l<jgObj.jobs.length; l++){
 
@@ -301,13 +308,17 @@ treeherder.directive('thCloneJobs', [
         /**
          * Group most resultStates as just counts.  Keep "failed" as job-btns
          */
-        var addGroupJobBtnEls = function(jgObj, jobTdEl) {
+        var addGroupJobBtnEls = function(jgObj, jobGrpList) {
             var ct, job, jobBtn, jobCountBtn, l;
             var jobsShown = 0;
             var jobCountBtnArray = [];
             var jobBtnArray = [];
             var stateCounts = {};
             var lastJobSelected = ThResultSetStore.getSelectedJob($rootScope.repoName);
+
+            var icon = jobGrpList.siblings(".group-count-list-icon");
+            icon.addClass("fa-plus-square-o");
+            icon.removeClass("fa-minus-square-o");
 
             for(l = 0; l < jgObj.jobs.length; l++) {
 
@@ -341,7 +352,7 @@ treeherder.directive('thCloneJobs', [
                 }
             }
 
-            jobTdEl.append(jobBtnArray);
+            jobGrpList.append(jobBtnArray);
 
             _.forEach(stateCounts, function(jobStatus) {
                 jobStatus.value = jobStatus.count;
@@ -356,7 +367,7 @@ treeherder.directive('thCloneJobs', [
             if (_.size(stateCounts)) {
                 var jobCountListBtn = $(jobGroupCountListInterpolator());
                 jobCountListBtn.append(jobCountBtnArray);
-                jobTdEl.append(jobCountListBtn);
+                jobGrpList.append(jobCountListBtn);
             }
 
             return jobsShown;
@@ -524,8 +535,9 @@ treeherder.directive('thCloneJobs', [
                 if (jgObj.symbol !== '?') {
                     // Job group detected, add job group symbols
                     jobGroups[i].grkey = jgObj.mapKey;
+                    jobGroups[i].collapsed = true;
                     jobGroup = $(jobGroupInterpolator(jobGroups[i]));
-
+                    console.log("jobGroup scope", jobGroup.scope());
                     jobTdEl.append(jobGroup);
                     var jobGroupList = jobGroup.find(".job-group-list");
                     if (groupState === "expanded") {
@@ -567,6 +579,7 @@ treeherder.directive('thCloneJobs', [
 
             element.find(".job-group-list").each(function internalFilterGroup(idx, el) {
                 var gi = getGroupInfo(el);
+                console.log("platform group scope", $(gi.platformGroupEl));
                 gi.jobGrpList.empty();
                 if (groupState === "expanded") {
                     addJobBtnEls(gi.jgObj, gi.jobGrpList);
