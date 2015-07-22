@@ -568,11 +568,11 @@ treeherder.directive('thCloneJobs', [
             element.find(".job-group-list").each(function internalFilterGroup(idx, el) {
                 var gi = getGroupInfo(el);
                 gi.jobGrpList.empty();
-                    if (groupState === "expanded") {
-                        addJobBtnEls(gi.jgObj, gi.jobGrpList);
-                    } else {
-                        addGroupJobBtnEls(gi.jgObj, gi.jobGrpList);
-                    }
+                if (groupState === "expanded") {
+                    addJobBtnEls(gi.jgObj, gi.jobGrpList);
+                } else {
+                    addGroupJobBtnEls(gi.jgObj, gi.jobGrpList);
+                }
 
             });
 
