@@ -274,10 +274,10 @@ class Builds4hTransformerMixin(object):
         if missing_resultsets and not filter_to_revision:
             common.fetch_missing_resultsets("builds4h", missing_resultsets, logger)
 
-        cache.set(CACHE_KEYS['complete'], job_ids_seen_now)
         num_new_jobs = len(job_ids_seen_now.difference(job_ids_seen_last_time))
         logger.info("Imported %d completed jobs, skipped %d previously seen",
                     num_new_jobs, len(job_ids_seen_now) - num_new_jobs)
+        cache.set(CACHE_KEYS['complete'], job_ids_seen_now)
 
         return th_collections
 
@@ -441,10 +441,10 @@ class PendingRunningTransformerMixin(object):
         if missing_resultsets and not filter_to_revision:
             common.fetch_missing_resultsets(source, missing_resultsets, logger)
 
-        cache.set(CACHE_KEYS[source], job_ids_seen_now)
         num_new_jobs = len(job_ids_seen_now.difference(job_ids_seen_last_time))
         logger.info("Imported %d %s jobs, skipped %d previously seen",
                     num_new_jobs, source, len(job_ids_seen_now) - num_new_jobs)
+        cache.set(CACHE_KEYS[source], job_ids_seen_now)
 
         return th_collections
 
@@ -462,7 +462,12 @@ class Builds4hJobsProcess(JsonExtractorMixin,
                                          filter_to_project=filter_to_project,
                                          filter_to_job_group=filter_to_job_group)
         if job_collections:
-            self.load(job_collections, chunk_size=settings.BUILDAPI_BUILDS4H_CHUNK_SIZE)
+            try:
+                self.load(job_collections, chunk_size=settings.BUILDAPI_BUILDS4H_CHUNK_SIZE)
+            except:
+                # Clear the cached "seen" job IDs or we won't retry these jobs next time.
+                cache.delete(CACHE_KEYS['complete'])
+                raise
             return True
         return False
 
@@ -481,7 +486,12 @@ class PendingJobsProcess(JsonExtractorMixin,
                                          filter_to_project=filter_to_project,
                                          filter_to_job_group=filter_to_job_group)
         if job_collections:
-            self.load(job_collections, chunk_size=settings.BUILDAPI_PENDING_CHUNK_SIZE)
+            try:
+                self.load(job_collections, chunk_size=settings.BUILDAPI_PENDING_CHUNK_SIZE)
+            except:
+                # Clear the cached "seen" job IDs or we won't retry these jobs next time.
+                cache.delete(CACHE_KEYS['pending'])
+                raise
             return True
         return False
 
@@ -500,6 +510,11 @@ class RunningJobsProcess(JsonExtractorMixin,
                                          filter_to_project=filter_to_project,
                                          filter_to_job_group=filter_to_job_group)
         if job_collections:
-            self.load(job_collections, chunk_size=settings.BUILDAPI_RUNNING_CHUNK_SIZE)
+            try:
+                self.load(job_collections, chunk_size=settings.BUILDAPI_RUNNING_CHUNK_SIZE)
+            except:
+                # Clear the cached "seen" job IDs or we won't retry these jobs next time.
+                cache.delete(CACHE_KEYS['running'])
+                raise
             return True
         return False
